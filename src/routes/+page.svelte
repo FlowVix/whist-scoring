@@ -34,7 +34,7 @@
     let zoomed = $state(false);
     $effect(() => {
         if (zoomed) {
-            document.body.style.zoom = "70%";
+            document.body.style.zoom = "60%";
         } else {
             document.body.style.zoom = "100%";
         }
@@ -46,17 +46,23 @@
     //         console.log(state.game);
     //     }
     // });
-    $inspect(menuState).with((_, s) => {
-        if (s.type == "In Progress") {
-            console.log("wrote to storage");
-            localStorage.setItem("savedGame", JSON.stringify(s.game));
+    $effect(() => {
+        let snapshot = $state.snapshot(menuState);
+        if (snapshot.type == "In Progress") {
+            localStorage.setItem("savedGame", JSON.stringify(snapshot.game));
         }
     });
+    // $inspect(menuState).with((_, s) => {
+    //     if (s.type == "In Progress") {
+    //         console.log("wrote to storage");
+    //         localStorage.setItem("savedGame", JSON.stringify(s.game));
+    //     }
+    // });
 </script>
 
 <div
-    style="width: {zoomed ? 100 / 0.7 : 100}vw; height: {zoomed
-        ? 100 / 0.7
+    style="width: {zoomed ? 100 / 0.6 : 100}vw; height: {zoomed
+        ? 100 / 0.6
         : 100}vh"
 >
     <div class="size-full bg-bg0 text-fg0 font-main font-medium flex flex-col">
@@ -102,7 +108,7 @@
                 {/if}
                 <button
                     class="text-fg4 opacity-50 text-sm"
-                    onclick={() => (zoomed = !zoomed)}>zoom out</button
+                    onclick={() => (zoomed = !zoomed)}>change zoom</button
                 >
             {:else if menuState.type == "Making"}
                 <span class="text-2xl"
@@ -374,6 +380,7 @@
                                     {/if}
                                 </div>
                             {/each}
+                            <div class="w-full min-h-[50%]"></div>
                         </div>
                     {:else}
                         {@const [scores, upTo] = calculateScores(
