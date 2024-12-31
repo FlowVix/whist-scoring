@@ -31,24 +31,25 @@
               viewingResults: boolean;
           };
 
-    let state: MenuState = $state({ type: "No Game" } as MenuState);
-
-    // $effect(() => {
-    //     if (state.type == "In Progress") {
-    //         console.log(state.game);
-    //     }
-    // });
-    $inspect(state).with((_, s) => {
-        if (s.type == "In Progress") {
-            localStorage.setItem("savedGame", JSON.stringify(s.game));
-        }
-    });
     let zoomed = $state(false);
     $effect(() => {
         if (zoomed) {
             document.body.style.zoom = "70%";
         } else {
             document.body.style.zoom = "100%";
+        }
+    });
+    let menuState: MenuState = $state({ type: "No Game" } as MenuState);
+
+    // $effect(() => {
+    //     if (state.type == "In Progress") {
+    //         console.log(state.game);
+    //     }
+    // });
+    $inspect(menuState).with((_, s) => {
+        if (s.type == "In Progress") {
+            console.log("wrote to storage");
+            localStorage.setItem("savedGame", JSON.stringify(s.game));
         }
     });
 </script>
@@ -68,13 +69,13 @@
         <div
             class="size-full min-h-0 flex flex-col justify-center items-center text-xl gap-4 p-4"
         >
-            {#if state.type == "No Game"}
+            {#if menuState.type == "No Game"}
                 {@const local = localStorage.getItem("savedGame")}
 
                 <span class="text-2xl">No game in progress!</span>
                 <Button
                     onclick={() => {
-                        state = {
+                        menuState = {
                             type: "Making",
                             players: ["", ""],
                             startingPlayer: 0,
@@ -87,7 +88,7 @@
                     <Button
                         onclick={() => {
                             let game: Game = JSON.parse(local);
-                            state = {
+                            menuState = {
                                 type: "In Progress",
                                 game,
                                 cardCounts: cardCounts(game.players.length),
@@ -103,18 +104,18 @@
                     class="text-fg4 opacity-50 text-sm"
                     onclick={() => (zoomed = !zoomed)}>zoom out</button
                 >
-            {:else if state.type == "Making"}
+            {:else if menuState.type == "Making"}
                 <span class="text-2xl"
                     >Enter player names and select starting player</span
                 >
 
                 <div class="flex flex-col gap-2">
-                    {#each state.players as name, idx}
+                    {#each menuState.players as name, idx}
                         <div class="flex items-center gap-2 text-xl">
                             <input
                                 type="text"
                                 class="bg-bgH border-2 border-fg1 rounded-xl p-2 text-center mr-2"
-                                bind:value={state.players[idx]}
+                                bind:value={menuState.players[idx]}
                             />
                             <!-- <button
                         class="text-red2 bg-bg2 hover:bg-bg3 active:bg-bg1 rounded-lg p-1"
@@ -123,14 +124,14 @@
                     </button> -->
                             <Button
                                 small
-                                disabled={state.players.length == 2}
+                                disabled={menuState.players.length == 2}
                                 onclick={() => {
-                                    if (state.type == "Making") {
-                                        state.players.splice(idx, 1);
-                                        state.startingPlayer = clamp(
-                                            state.startingPlayer,
+                                    if (menuState.type == "Making") {
+                                        menuState.players.splice(idx, 1);
+                                        menuState.startingPlayer = clamp(
+                                            menuState.startingPlayer,
                                             0,
-                                            state.players.length - 1
+                                            menuState.players.length - 1
                                         );
                                     }
                                 }}
@@ -143,17 +144,17 @@
                             </Button>
                             <Button
                                 small
-                                active={idx == state.startingPlayer}
+                                active={idx == menuState.startingPlayer}
                                 onclick={() => {
-                                    if (state.type == "Making") {
-                                        state.startingPlayer = idx;
+                                    if (menuState.type == "Making") {
+                                        menuState.startingPlayer = idx;
                                     }
                                 }}
                             >
                                 <Play
                                     size={32}
                                     strokeWidth={3}
-                                    class={idx == state.startingPlayer
+                                    class={idx == menuState.startingPlayer
                                         ? "text-fg0"
                                         : "text-fg0/70"}
                                 />
@@ -164,10 +165,10 @@
 
                 <Button
                     small
-                    disabled={state.players.length == 6}
+                    disabled={menuState.players.length == 6}
                     onclick={() => {
-                        if (state.type == "Making") {
-                            state.players.push("");
+                        if (menuState.type == "Making") {
+                            menuState.players.push("");
                         }
                     }}
                 >
@@ -179,14 +180,16 @@
                 </Button>
                 <span class="text-2xl"
                     ><Button
-                        disabled={state.players.some(v => v.trim().length == 0)}
+                        disabled={menuState.players.some(
+                            v => v.trim().length == 0
+                        )}
                         onclick={() => {
-                            if (state.type == "Making") {
+                            if (menuState.type == "Making") {
                                 let [game, cardCounts] = newGame(
-                                    state.players.map(v => v.trim()),
-                                    state.startingPlayer
+                                    menuState.players.map(v => v.trim()),
+                                    menuState.startingPlayer
                                 );
-                                state = {
+                                menuState = {
                                     type: "In Progress",
                                     game,
                                     cardCounts,
@@ -202,29 +205,31 @@
                 <div class="size-full min-h-0 flex flex-col items-center gap-4">
                     <Button
                         onclick={() => {
-                            if (state.type == "In Progress") {
-                                state.viewingResults = !state.viewingResults;
+                            if (menuState.type == "In Progress") {
+                                menuState.viewingResults =
+                                    !menuState.viewingResults;
                             }
                         }}
-                        >{state.viewingResults
+                        >{menuState.viewingResults
                             ? "Back to Game"
                             : "View Results"}</Button
                     >
-                    {#if !state.viewingResults}
+                    {#if !menuState.viewingResults}
                         <div
                             class="bg-bg1 w-full h-full min-h-0 border-2 border-bg3 rounded-xl p-2 overflow-y-scroll flex flex-col gap-2"
                         >
-                            {#each state.game.rounds as round, roundIdx}
-                                {@const open = state.open[roundIdx]}
-                                {@const cardCount = state.cardCounts[roundIdx]}
+                            {#each menuState.game.rounds as round, roundIdx}
+                                {@const open = menuState.open[roundIdx]}
+                                {@const cardCount =
+                                    menuState.cardCounts[roundIdx]}
                                 {@const details = roundDetails(
                                     round,
                                     cardCount
                                 )}
                                 {@const valid = isValidRound(details)}
                                 {@const playerShift = rotArray(
-                                    state.game.players,
-                                    roundIdx + state.game.startingPlayer
+                                    menuState.game.players,
+                                    roundIdx + menuState.game.startingPlayer
                                 )}
 
                                 <div
@@ -235,8 +240,11 @@
                                     <button
                                         class="w-full h-full flex p-1"
                                         onclick={() => {
-                                            if (state.type == "In Progress") {
-                                                state.open[roundIdx] = !open;
+                                            if (
+                                                menuState.type == "In Progress"
+                                            ) {
+                                                menuState.open[roundIdx] =
+                                                    !open;
                                             }
                                         }}
                                     >
@@ -316,7 +324,7 @@
                                                             class="bg-bgH border-2 text-fg0 border-fg1 rounded-xl p-1 text-center w-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                             min={0}
                                                             max={cardCount}
-                                                            bind:value={state
+                                                            bind:value={menuState
                                                                 .game.rounds[
                                                                 roundIdx
                                                             ][playerIdx].bid}
@@ -327,7 +335,7 @@
                                                             class="bg-bgH border-2 text-fg0 border-fg1 rounded-xl p-1 text-center w-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                             min={0}
                                                             max={cardCount}
-                                                            bind:value={state
+                                                            bind:value={menuState
                                                                 .game.rounds[
                                                                 roundIdx
                                                             ][playerIdx].taken}
@@ -368,7 +376,9 @@
                             {/each}
                         </div>
                     {:else}
-                        {@const [scores, upTo] = calculateScores(state.game)}
+                        {@const [scores, upTo] = calculateScores(
+                            menuState.game
+                        )}
                         <div
                             class="flex flex-col p-4 gap-4 size-full items-center justify-center"
                         >
@@ -378,7 +388,7 @@
                                         1}</span
                                 >
                             {/if}
-                            {#each state.game.players as player, idx}
+                            {#each menuState.game.players as player, idx}
                                 <div
                                     class="w-1/2 flex bg-bgH border-2 rounded-2xl p-4 text-2xl justify-center relative"
                                 >
