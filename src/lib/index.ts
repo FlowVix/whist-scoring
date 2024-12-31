@@ -98,7 +98,7 @@ export const calculateScores = (game: Game): [number[], number | null] => {
             return [game.players.map((v) => scores[v]), i];
         }
 
-        let playersShift = rotArray(game.players, i);
+        let playersShift = rotArray(game.players, i + game.startingPlayer);
         for (let i = 0; i < playersShift.length; i++) {
             let player = playersShift[i];
             let bid = round[i].bid;
