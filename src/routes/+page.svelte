@@ -397,7 +397,7 @@
                             {/if}
                             {#each menuState.game.players as player, idx}
                                 <div
-                                    class="w-1/2 flex bg-bgH border-2 rounded-2xl p-4 text-2xl justify-center relative"
+                                    class="w-full flex bg-bgH border-2 rounded-2xl p-4 text-2xl justify-center relative"
                                 >
                                     <span class="w-1/3 text-left">{player}</span
                                     >
