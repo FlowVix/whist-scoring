@@ -284,7 +284,7 @@
                                         <div class="p-2 flex flex-col gap-2">
                                             <span class="text-fg3"
                                                 ><span class="font-bold italic"
-                                                    >{playerShift[0]}</span
+                                                    >{playerShift[playerShift.length - 1]}</span
                                                 > deals the cards.</span
                                             >
                                             <span class="text-fg3">
